@@ -1,0 +1,6 @@
+npm create vite@latest ecommerce-frontend
+npm install
+npm i react-router-dom
+npm i axios
+npm i lucide-react
+npm install tailwindcss @tailwindcss/vite

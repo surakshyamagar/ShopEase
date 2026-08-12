@@ -1,0 +1,26 @@
+1. What are ES Modules and CommonJS?
+=> ES Modules and CommonJS are two different module systems in JavaScript. They define how we split code into multiple files and how we import and export code between those files.
+
+    eg;
+    1. ES: /modles/product.js, CommonJS: /models/product
+    2. import from, require
+    3. export edfault, module.export
+    
+2. process
+=> object containing {env, exit(), cwd(), version, platform etc}, created by Node.js
+
+=> EG: process.env.PORT
+      : process = {
+            env: {
+                PORT: "5000",
+                NODE_ENV: "development",
+                MONGODB_URI: "...",
+                JWT_SECRET: "..."
+            }
+        }
+
+# BACKEND
+1. JWT: JWT stands for JSON Web Token. It is an encrypted digital "pass" or "identity card" that your server gives to the client (browser or Postman) after a successful login.
+2. jsonwebtoken package =>  jwt.sign()
+                            jwt.verify()
+                            jwt.decode()
