@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+    Search,
+    Package,
+    Pencil,
+    Trash2,
+    Plus,
+    LoaderCircle,
+} from "lucide-react";
 
 import {
     getProducts,
@@ -7,6 +15,8 @@ import {
 } from "../../services/productService";
 
 import { getCategories } from "../../services/categoryService";
+
+import AdminNavbar from "../../components/AdminNavbar";
 
 
 function Product() {
@@ -16,8 +26,11 @@ function Product() {
 
     const [loading, setLoading] = useState(true);
 
+    const [search, setSearch] = useState("");
 
-    // Load products and categories
+
+    // ================= LOAD DATA =================
+
     useEffect(() => {
         loadData();
     }, []);
@@ -29,11 +42,13 @@ function Product() {
 
             setLoading(true);
 
-            const [productsData, categoriesData] =
-                await Promise.all([
-                    getProducts(),
-                    getCategories(),
-                ]);
+            const [
+                productsData,
+                categoriesData
+            ] = await Promise.all([
+                getProducts(),
+                getCategories(),
+            ]);
 
             setProducts(productsData);
             setCategories(categoriesData);
@@ -50,7 +65,8 @@ function Product() {
     };
 
 
-    // Delete product
+    // ================= DELETE PRODUCT =================
+
     const handleDelete = async (id) => {
 
         const confirmDelete = window.confirm(
@@ -61,11 +77,11 @@ function Product() {
             return;
         }
 
+
         try {
 
             await deleteProduct(id);
 
-            // Remove deleted product from UI
             setProducts(
                 products.filter(
                     (product) => product._id !== id
@@ -82,7 +98,8 @@ function Product() {
     };
 
 
-    // Get category name
+    // ================= CATEGORY NAME =================
+
     const getCategoryName = (categoryId) => {
 
         const category = categories.find(
@@ -95,52 +112,24 @@ function Product() {
     };
 
 
+    // ================= SEARCH =================
+
+    const filteredProducts = products.filter((product) =>
+        product.name
+            ?.toLowerCase()
+            .includes(search.toLowerCase())
+    );
+
+
+    // ================= UI =================
+
     return (
-        <div className="min-h-screen bg-gray-100">
 
-            {/* ================= HEADER ================= */}
+        <div className="min-h-screen bg-gray-50">
 
-            <header className="bg-white border-b">
+            {/* ================= NAVBAR ================= */}
 
-                <div className="max-w-7xl mx-auto px-6">
-
-                    <div className="h-16 flex items-center justify-between">
-
-                        {/* Logo */}
-
-                        <Link
-                            to="/products"
-                            className="text-2xl font-bold text-blue-600"
-                        >
-                            ShopEase
-                        </Link>
-
-
-                        {/* Navigation */}
-
-                        <nav className="flex items-center gap-6">
-
-                            <Link
-                                to="/products"
-                                className="text-gray-700 hover:text-blue-600"
-                            >
-                                Products
-                            </Link>
-
-                            <Link
-                                to="/categories"
-                                className="text-gray-700 hover:text-blue-600"
-                            >
-                                Categories
-                            </Link>
-
-                        </nav>
-
-                    </div>
-
-                </div>
-
-            </header>
+            <AdminNavbar />
 
 
             {/* ================= MAIN ================= */}
@@ -148,40 +137,93 @@ function Product() {
             <main className="max-w-7xl mx-auto px-6 py-8">
 
 
-                {/* PAGE HEADER */}
+                {/* ================= PAGE HEADER ================= */}
 
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
                     <div>
+
+                        <div className="flex items-center gap-2 text-sm text-blue-600 font-medium mb-2">
+
+                            <Package size={18} />
+
+                            Store Management
+
+                        </div>
+
 
                         <h1 className="text-3xl font-bold text-gray-900">
                             Products
                         </h1>
 
+
                         <p className="text-gray-500 mt-1">
-                            Manage your products
+                            Manage your products, pricing and inventory.
                         </p>
 
                     </div>
 
 
+                    {/* Add Product */}
+
                     <Link
                         to="/products/add"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-medium"
+                        className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-medium transition shadow-sm hover:shadow-md"
                     >
-                        + Add Product
+
+                        <Plus size={19} />
+
+                        Add Product
+
                     </Link>
 
                 </div>
 
 
-                {/* ================= PRODUCT COUNT ================= */}
+                {/* ================= TOOLBAR ================= */}
 
-                <div className="mb-5">
+                <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
 
-                    <p className="text-gray-600">
-                        {products.length} products
-                    </p>
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+
+                        {/* Search */}
+
+                        <div className="relative w-full md:w-96">
+
+                            <Search
+                                size={19}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                            />
+
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={search}
+                                onChange={(e) =>
+                                    setSearch(e.target.value)
+                                }
+                                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+                            />
+
+                        </div>
+
+
+                        {/* Product Count */}
+
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+
+                            <span>
+                                Total Products
+                            </span>
+
+                            <span className="font-semibold text-gray-900">
+                                {products.length}
+                            </span>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
@@ -190,9 +232,14 @@ function Product() {
 
                 {loading && (
 
-                    <div className="bg-white rounded-xl p-10 text-center">
+                    <div className="bg-white border border-gray-200 rounded-xl p-12 flex flex-col items-center justify-center">
 
-                        <p className="text-gray-500">
+                        <LoaderCircle
+                            size={35}
+                            className="animate-spin text-blue-600"
+                        />
+
+                        <p className="text-gray-500 mt-4">
                             Loading products...
                         </p>
 
@@ -205,21 +252,37 @@ function Product() {
 
                 {!loading && products.length === 0 && (
 
-                    <div className="bg-white rounded-xl p-10 text-center">
+                    <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
 
-                        <h2 className="text-xl font-semibold">
+                        <div className="w-16 h-16 mx-auto rounded-full bg-blue-50 flex items-center justify-center">
+
+                            <Package
+                                size={30}
+                                className="text-blue-600"
+                            />
+
+                        </div>
+
+
+                        <h2 className="text-xl font-semibold text-gray-900 mt-5">
                             No products yet
                         </h2>
 
+
                         <p className="text-gray-500 mt-2">
-                            Add your first product.
+                            Start by adding your first product.
                         </p>
+
 
                         <Link
                             to="/products/add"
-                            className="inline-block mt-5 bg-blue-600 text-white px-5 py-2 rounded-lg"
+                            className="inline-flex items-center gap-2 mt-6 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition"
                         >
+
+                            <Plus size={18} />
+
                             Add Product
+
                         </Link>
 
                     </div>
@@ -227,119 +290,188 @@ function Product() {
                 )}
 
 
-                {/* ================= PRODUCTS ================= */}
+                {/* ================= NO SEARCH RESULTS ================= */}
 
-                {!loading && products.length > 0 && (
+                {!loading &&
+                    products.length > 0 &&
+                    filteredProducts.length === 0 && (
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
 
-                        {products.map((product) => (
+                            <Search
+                                size={35}
+                                className="mx-auto text-gray-400"
+                            />
 
-                            <div
-                                key={product._id}
-                                className="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition"
-                            >
+                            <h2 className="text-lg font-semibold mt-4">
+                                No products found
+                            </h2>
 
-                                {/* IMAGE */}
+                            <p className="text-gray-500 mt-1">
+                                Try searching for a different product.
+                            </p>
 
-                                <div className="h-56 bg-gray-100">
+                        </div>
 
-                                    {product.image ? (
+                    )}
 
-                                        <img
-                                            src={product.image}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover"
-                                        />
 
-                                    ) : (
+                {/* ================= PRODUCT GRID ================= */}
 
-                                        <div className="h-full flex items-center justify-center text-gray-400">
-                                            No image
+                {!loading &&
+                    filteredProducts.length > 0 && (
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+                            {filteredProducts.map((product) => (
+
+                                <div
+                                    key={product._id}
+                                    className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                                >
+
+                                    {/* ================= IMAGE ================= */}
+
+                                    <div className="relative h-56 bg-gray-100 overflow-hidden">
+
+                                        {product.image ? (
+
+                                            <img
+                                                src={product.image}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+
+                                        ) : (
+
+                                            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+
+                                                <Package size={35} />
+
+                                                <span className="text-sm mt-2">
+                                                    No image
+                                                </span>
+
+                                            </div>
+
+                                        )}
+
+
+                                        {/* Category Badge */}
+
+                                        <span className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-medium text-blue-600 shadow-sm">
+
+                                            {getCategoryName(product.category)}
+
+                                        </span>
+
+                                    </div>
+
+
+                                    {/* ================= CONTENT ================= */}
+
+                                    <div className="p-5">
+
+                                        <h2 className="text-lg font-semibold text-gray-900 truncate">
+
+                                            {product.name}
+
+                                        </h2>
+
+
+                                        <p className="text-sm text-gray-500 mt-2 line-clamp-2 min-h-10">
+
+                                            {product.description}
+
+                                        </p>
+
+
+                                        {/* Price / Stock */}
+
+                                        <div className="flex items-center justify-between mt-5">
+
+                                            <div>
+
+                                                <p className="text-xl font-bold text-gray-900">
+
+                                                    ${product.price}
+
+                                                </p>
+
+                                                <p className="text-xs text-gray-400 mt-1">
+                                                    Product Price
+                                                </p>
+
+                                            </div>
+
+
+                                            <div className="text-right">
+
+                                                <p
+                                                    className={`text-sm font-semibold ${
+                                                        product.stock > 0
+                                                            ? "text-green-600"
+                                                            : "text-red-600"
+                                                    }`}
+                                                >
+
+                                                    {product.stock > 0
+                                                        ? `${product.stock} in stock`
+                                                        : "Out of stock"}
+
+                                                </p>
+
+                                            </div>
+
                                         </div>
 
-                                    )}
 
-                                </div>
+                                        {/* ================= ACTIONS ================= */}
 
+                                        <div className="flex gap-2 mt-5">
 
-                                {/* CONTENT */}
+                                            <Link
+                                                to={`/products/edit/${product._id}`}
+                                                className="flex-1 inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2.5 rounded-lg text-sm font-medium transition"
+                                            >
 
-                                <div className="p-5">
+                                                <Pencil size={16} />
 
-                                    {/* Category */}
+                                                Edit
 
-                                    <p className="text-sm text-blue-600 font-medium mb-1">
-                                        {getCategoryName(product.category)}
-                                    </p>
-
-
-                                    {/* Name */}
-
-                                    <h2 className="text-lg font-semibold text-gray-900">
-                                        {product.name}
-                                    </h2>
+                                            </Link>
 
 
-                                    {/* Description */}
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(product._id)
+                                                }
+                                                className="flex-1 inline-flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2.5 rounded-lg text-sm font-medium transition"
+                                            >
 
-                                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                                        {product.description}
-                                    </p>
+                                                <Trash2 size={16} />
 
+                                                Delete
 
-                                    {/* Price + Stock */}
+                                            </button>
 
-                                    <div className="flex justify-between items-center mt-4">
-
-                                        <p className="text-xl font-bold text-gray-900">
-                                            ${product.price}
-                                        </p>
-
-                                        <p className="text-sm text-gray-500">
-                                            Stock: {product.stock}
-                                        </p>
-
-                                    </div>
-
-
-                                    {/* BUTTONS */}
-
-                                    <div className="flex gap-2 mt-5">
-
-                                        <Link
-                                            to={`/products/edit/${product._id}`}
-                                            className="flex-1 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-2 rounded-lg font-medium"
-                                        >
-                                            Edit
-                                        </Link>
-
-
-                                        <button
-                                            onClick={() =>
-                                                handleDelete(product._id)
-                                            }
-                                            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-medium"
-                                        >
-                                            Delete
-                                        </button>
+                                        </div>
 
                                     </div>
 
                                 </div>
 
-                            </div>
+                            ))}
 
-                        ))}
+                        </div>
 
-                    </div>
-
-                )}
+                    )}
 
             </main>
 
         </div>
     );
 }
+
 
 export default Product;

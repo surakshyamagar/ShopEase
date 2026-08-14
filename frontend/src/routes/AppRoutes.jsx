@@ -35,54 +35,146 @@
 // export default AppRoutes;
 
 
+import {
+    BrowserRouter,
+    Navigate,
+    Route,
+    Routes,
+} from "react-router-dom";
 
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+
 import AuthLayout from "../layouts/AuthLayout";
+
+import UserDashboard from "../dashboards/UserDashboard";
+import AdminDashboard from "../dashboards/AdminDashboard";
+
 import Product from "../pages/product/product";
 import AddProduct from "../pages/product/AddProduct";
 import EditProduct from "../pages/product/EditProduct";
 
+import ProtectedRoute from "./ProtectedRoute";
+import RoleBasedRoute from "./RoleBasedRoute";
+import DashboardRedirect from "./DashboardRedirect";
+import Category from "../pages/categories/Category";
+
 
 function AppRoutes() {
+
     return (
+
         <BrowserRouter>
 
             <Routes>
 
-                {/* AUTH PAGES */}
+                {/* AUTH */}
+
+                <Route element={<AuthLayout />}>
+
+                    <Route
+                        path="/"
+                        element={<Login />}
+                    />
+
+                    <Route
+                        path="/register"
+                        element={<Register />}
+                    />
+
+                </Route>
+
+
+                {/* DASHBOARD REDIRECT */}
 
                 <Route
-                    path="/"
-                    element={<Login />}
+                    path="/dashboard"
+                    element={
+                        <DashboardRedirect />
+                    }
                 />
+
+
+                {/* USER DASHBOARD */}
 
                 <Route
-                    path="/register"
-                    element={<Register />}
+                    path="/customer/dashboard"
+                    element={
+                        <RoleBasedRoute role="USER">
+
+                            <UserDashboard />
+
+                        </RoleBasedRoute>
+                    }
                 />
 
 
-                {/* PRODUCT PAGES */}
+                {/* ADMIN DASHBOARD */}
+
+                <Route
+                    path="/admin/dashboard"
+                    element={
+                        <RoleBasedRoute role="ADMIN">
+
+                            <AdminDashboard />
+
+                        </RoleBasedRoute>
+                    }
+                />
+
+
+                {/* PRODUCTS */}
 
                 <Route
                     path="/products"
-                    element={<Product />}
+                    element={
+                        <ProtectedRoute>
+
+                            <Product />
+
+                        </ProtectedRoute>
+                    }
                 />
+
+
+                {/* ADMIN ADD PRODUCT */}
 
                 <Route
                     path="/products/add"
-                    element={<AddProduct />}
+                    element={
+                        <RoleBasedRoute role="ADMIN">
+
+                            <AddProduct />
+
+                        </RoleBasedRoute>
+                    }
                 />
+
+
+                {/* ADMIN EDIT PRODUCT */}
 
                 <Route
                     path="/products/edit/:id"
-                    element={<EditProduct/>}
+                    element={
+                        <RoleBasedRoute role="ADMIN">
+
+                            <EditProduct />
+
+                        </RoleBasedRoute>
+                    }
+                />
+
+                <Route
+                    path="/categories"
+                    element={
+                        <RoleBasedRoute role="ADMIN">
+                            <Category />
+                        </RoleBasedRoute>
+                    }
                 />
 
 
-                {/* 404 */}
+                {/* NOT FOUND */}
 
                 <Route
                     path="*"

@@ -151,10 +151,46 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+const filterProducts = async (req, res) => {
+    try {
+        const { search, category } = req.query;
+
+        const filter = {};
+
+        // Search by product name
+        if (search) {
+            filter.name = {
+                $regex: search,
+                $options: "i",
+            };
+        }
+
+        // Filter by category
+        if (category) {
+            filter.category = category;
+        }
+
+        const products = await Product.find(filter);
+
+        res.status(200).json({
+            success: true,
+            message: "Products fetched successfully",
+            data: products,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 export {
     createProduct,
     getProducts,
     getProduct,
     updateProduct,
     deleteProduct,
+    filterProducts,
 }

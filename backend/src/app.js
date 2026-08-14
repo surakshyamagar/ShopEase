@@ -8,6 +8,9 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import reviewRoutes from "./routes/orderRoutes.js"
 
 // Create Express application
 // app = whole project, start all routes with app (app.use)
@@ -48,6 +51,14 @@ app.get("/", (req, res) => {
 
   // products
   app.use("/product", productRoutes);
+
+  // carts
+  app.use("/cart", cartRoutes);
+
+  // order
+  app.use("/order", orderRoutes);
+
+  app.use("/review", reviewRoutes);
   
 
 export default app;
