@@ -1,43 +1,239 @@
+// import Product from "../../models/Product.js";
+
+// const createProduct = async(req, res) => {
+//     try{
+//         const {name, description, price, stock, image, category} = req.body;
+
+//         const product = await Product.create({
+//             name,
+//             description,
+//             price, 
+//             stock, 
+//             image,
+//             category,
+//         })
+
+//         res.status(201).json({
+//             success: true,
+//             message: "Product created successfully",
+//             data: product,
+//         });
+//     } catch(error){
+//          res.status(500).json({
+//             success: false,
+//             message: "Internal error",
+//         });
+//     }
+// };
+
+
+// // GET all
+// const getProducts = async (req, res) => {
+//     try{
+//         const product = await Product.find();
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Products fecthed successfully",
+//             data: product,
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+// // GET 1
+// const getProduct = async(req, res) => {
+//     try{
+//         const id = req.params.id;
+
+//         const product = await Product.findById(id);
+
+//         if (!product) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Product not found!",
+//             });
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Product fetched successfully",
+//             data: product,
+//         });
+//     } catch (error) {
+//          console.error(error);
+
+//         res.status(500).json({
+//             success: false,
+//             message: "Internal server error",
+//         });
+//     };
+// }
+
+// const updateProduct = async (req, res) => {
+//     try{
+//         const id = req.params.id;
+//         const {name, description, price, stock, image, category} = req.body;
+
+//         const product = await Product.findByIdAndUpdate(
+//             id,
+//             {
+//                 name, 
+//                 description,
+//                 price,
+//                 stock,
+//                 image,
+//                 category,
+//             },
+//             { 
+//                 new: true,
+//                 // makes sure those schema validation rules are applied during the update too.
+//                 runValidators: true,
+//             }
+//         );
+
+//         if (!product) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Product not found!",
+//             });
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Product updated successfully",
+//             data: product,
+//         });
+
+//     } catch(error) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+// // DELETE
+// const deleteProduct = async (req, res) => {
+//     try {
+//         const id = req.params.id;
+
+//         // 1. Find Product
+//         const product = await Product.findById(id);
+
+//         // 2. Check if Product exists
+//         if (!product) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Product not found!",
+//             });
+//         }
+
+//         // 3. Delete Product
+//         const deletedProduct = await Product.findByIdAndDelete(id);
+
+//         // 4. Send response
+//         res.status(200).json({
+//             success: true,
+//             message: "Product deleted successfully",
+//             data: deletedProduct,
+//         });
+
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+// const filterProducts = async (req, res) => {
+//     try {
+//         const { search, category } = req.query;
+
+//         const filter = {};
+
+//         // Search by product name
+//         if (search) {
+//             filter.name = {
+//                 $regex: search,
+//                 $options: "i",
+//             };
+//         }
+
+//         // Filter by category
+//         if (category) {
+//             filter.category = category;
+//         }
+
+//         const products = await Product.find(filter);
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Products fetched successfully",
+//             data: products,
+//         });
+
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+// export {
+//     createProduct,
+//     getProducts,
+//     getProduct,
+//     updateProduct,
+//     deleteProduct,
+//     filterProducts,
+// }
+
 import Product from "../../models/Product.js";
 
-const createProduct = async(req, res) => {
-    try{
-        const {name, description, price, stock, image, category} = req.body;
+
+// =====================================================
+// CREATE PRODUCT
+// =====================================================
+
+const createProduct = async (req, res) => {
+    try {
+        const {
+            name,
+            description,
+            price,
+            stock,
+            category,
+        } = req.body;
+
+        // Cloudinary URL
+        const image = req.cloudinaryResult?.secure_url || "";
 
         const product = await Product.create({
             name,
             description,
-            price, 
-            stock, 
+            price,
+            stock,
             image,
             category,
-        })
+        });
 
         res.status(201).json({
             success: true,
             message: "Product created successfully",
             data: product,
         });
-    } catch(error){
-         res.status(500).json({
-            success: false,
-            message: "Internal error",
-        });
-    }
-};
 
-
-// GET all
-const getProducts = async (req, res) => {
-    try{
-        const product = await Product.find();
-
-        res.status(200).json({
-            success: true,
-            message: "Products fecthed successfully",
-            data: product,
-        });
     } catch (error) {
+
+        console.error("Create product error:", error);
+
         res.status(500).json({
             success: false,
             message: error.message,
@@ -45,9 +241,39 @@ const getProducts = async (req, res) => {
     }
 };
 
-// GET 1
-const getProduct = async(req, res) => {
-    try{
+
+// =====================================================
+// GET ALL PRODUCTS
+// =====================================================
+
+const getProducts = async (req, res) => {
+    try {
+
+        const products = await Product.find();
+
+        res.status(200).json({
+            success: true,
+            message: "Products fetched successfully",
+            data: products,
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+
+// =====================================================
+// GET ONE PRODUCT
+// =====================================================
+
+const getProduct = async (req, res) => {
+    try {
+
         const id = req.params.id;
 
         const product = await Product.findById(id);
@@ -64,34 +290,54 @@ const getProduct = async(req, res) => {
             message: "Product fetched successfully",
             data: product,
         });
+
     } catch (error) {
-         console.error(error);
+
+        console.error(error);
 
         res.status(500).json({
             success: false,
             message: "Internal server error",
         });
-    };
-}
+    }
+};
+
+
+// =====================================================
+// UPDATE PRODUCT
+// =====================================================
 
 const updateProduct = async (req, res) => {
-    try{
+    try {
+
         const id = req.params.id;
-        const {name, description, price, stock, image, category} = req.body;
+
+        const {
+            name,
+            description,
+            price,
+            stock,
+            category,
+        } = req.body;
+
+        const updateData = {
+            name,
+            description,
+            price,
+            stock,
+            category,
+        };
+
+        // Only replace image if a new image was uploaded
+        if (req.cloudinaryResult?.secure_url) {
+            updateData.image = req.cloudinaryResult.secure_url;
+        }
 
         const product = await Product.findByIdAndUpdate(
             id,
+            updateData,
             {
-                name, 
-                description,
-                price,
-                stock,
-                image,
-                category,
-            },
-            { 
                 new: true,
-                // makes sure those schema validation rules are applied during the update too.
                 runValidators: true,
             }
         );
@@ -109,7 +355,10 @@ const updateProduct = async (req, res) => {
             data: product,
         });
 
-    } catch(error) {
+    } catch (error) {
+
+        console.error("Update product error:", error);
+
         res.status(500).json({
             success: false,
             message: error.message,
@@ -117,15 +366,18 @@ const updateProduct = async (req, res) => {
     }
 };
 
-// DELETE
+
+// =====================================================
+// DELETE PRODUCT
+// =====================================================
+
 const deleteProduct = async (req, res) => {
     try {
+
         const id = req.params.id;
 
-        // 1. Find Product
         const product = await Product.findById(id);
 
-        // 2. Check if Product exists
         if (!product) {
             return res.status(404).json({
                 success: false,
@@ -133,10 +385,8 @@ const deleteProduct = async (req, res) => {
             });
         }
 
-        // 3. Delete Product
         const deletedProduct = await Product.findByIdAndDelete(id);
 
-        // 4. Send response
         res.status(200).json({
             success: true,
             message: "Product deleted successfully",
@@ -144,6 +394,7 @@ const deleteProduct = async (req, res) => {
         });
 
     } catch (error) {
+
         res.status(500).json({
             success: false,
             message: error.message,
@@ -151,13 +402,18 @@ const deleteProduct = async (req, res) => {
     }
 };
 
+
+// =====================================================
+// FILTER PRODUCTS
+// =====================================================
+
 const filterProducts = async (req, res) => {
     try {
+
         const { search, category } = req.query;
 
         const filter = {};
 
-        // Search by product name
         if (search) {
             filter.name = {
                 $regex: search,
@@ -165,7 +421,6 @@ const filterProducts = async (req, res) => {
             };
         }
 
-        // Filter by category
         if (category) {
             filter.category = category;
         }
@@ -179,12 +434,14 @@ const filterProducts = async (req, res) => {
         });
 
     } catch (error) {
+
         res.status(500).json({
             success: false,
             message: error.message,
         });
     }
 };
+
 
 export {
     createProduct,
@@ -193,4 +450,4 @@ export {
     updateProduct,
     deleteProduct,
     filterProducts,
-}
+};

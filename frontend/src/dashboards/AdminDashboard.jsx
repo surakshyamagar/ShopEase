@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+import { getAdminDashboardStats } from "../services/adminService";
 
 import {
     LayoutDashboard,
@@ -26,7 +29,90 @@ function AdminDashboard() {
     const { user, logout } = useAuth();
 
 
+    // =====================================================
+    // DASHBOARD STATE
+    // =====================================================
+
+    const [stats, setStats] = useState({
+        totalCustomers: 0,
+        totalProducts: 0,
+        totalOrders: 0,
+        totalRevenue: 0,
+        lowStockProducts: 0,
+        outOfStockProducts: 0,
+        totalStock: 0,
+    });
+
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+
+    // =====================================================
+    // LOAD DASHBOARD DATA
+    // =====================================================
+
+    useEffect(() => {
+
+        const loadDashboardStats = async () => {
+
+            try {
+
+                setLoading(true);
+                setError("");
+
+                const data = await getAdminDashboardStats();
+
+                setStats({
+                    totalCustomers: data?.totalCustomers ?? 0,
+                    totalProducts: data?.totalProducts ?? 0,
+                    totalOrders: data?.totalOrders ?? 0,
+                    totalRevenue: data?.totalRevenue ?? 0,
+                    lowStockProducts: data?.lowStockProducts ?? 0,
+                    outOfStockProducts: data?.outOfStockProducts ?? 0,
+                    totalStock: data?.totalStock ?? 0,
+                });
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to load dashboard statistics:",
+                    error
+                );
+
+                setError(
+                    error?.response?.data?.message ||
+                    "Failed to load dashboard statistics."
+                );
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        };
+
+
+        loadDashboardStats();
+
+    }, []);
+
+
+    // =====================================================
+    // FORMAT REVENUE
+    // =====================================================
+
+    const formattedRevenue =
+        Number(stats.totalRevenue || 0).toFixed(2);
+
+
+    // =====================================================
+    // RETURN
+    // =====================================================
+
     return (
+
         <div className="min-h-screen bg-gray-50 text-gray-900">
 
             <div className="flex min-h-screen">
@@ -55,6 +141,7 @@ function AdminDashboard() {
                             <h1 className="text-xl font-bold tracking-tight">
 
                                 Shop
+
                                 <span className="text-emerald-500">
                                     Ease
                                 </span>
@@ -133,7 +220,7 @@ function AdminDashboard() {
                         </Link>
 
 
-                        {/* Users */}
+                        {/* Customers */}
 
                         <Link
                             to="/admin/users"
@@ -198,17 +285,23 @@ function AdminDashboard() {
 
 
                         <p className="text-sm font-bold text-gray-800">
+
                             {user?.name || "Administrator"}
+
                         </p>
 
 
                         <p className="mt-1 truncate text-xs text-gray-500">
+
                             {user?.email || "admin@example.com"}
+
                         </p>
 
 
                         <span className="mt-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-600">
+
                             ADMIN
+
                         </span>
 
                     </div>
@@ -258,7 +351,9 @@ function AdminDashboard() {
 
                             {/* Notification */}
 
-                            <button className="relative rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-emerald-600">
+                            <button
+                                className="relative rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-emerald-600"
+                            >
 
                                 <Bell size={21} />
 
@@ -283,11 +378,15 @@ function AdminDashboard() {
                                 <div className="hidden sm:block">
 
                                     <p className="text-sm font-semibold text-gray-800">
+
                                         {user?.name || "Administrator"}
+
                                     </p>
 
                                     <p className="text-xs text-gray-500">
+
                                         Administrator
+
                                     </p>
 
                                 </div>
@@ -306,6 +405,38 @@ function AdminDashboard() {
 
 
                         {/* =================================================
+                            LOADING
+                        ================================================== */}
+
+                        {loading && (
+
+                            <div className="mb-6 rounded-xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-600">
+
+                                Loading dashboard statistics...
+
+                            </div>
+
+                        )}
+
+
+
+                        {/* =================================================
+                            ERROR
+                        ================================================== */}
+
+                        {error && (
+
+                            <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
+
+                                {error}
+
+                            </div>
+
+                        )}
+
+
+
+                        {/* =================================================
                             WELCOME
                         ================================================== */}
 
@@ -315,7 +446,9 @@ function AdminDashboard() {
                             <div>
 
                                 <p className="mb-2 text-sm font-semibold text-emerald-600">
+
                                     ADMIN CONTROL CENTER 👋
+
                                 </p>
 
 
@@ -333,7 +466,9 @@ function AdminDashboard() {
 
 
                                 <p className="mt-2 text-gray-500">
+
                                     Manage your store, products, customers and orders from here.
+
                                 </p>
 
                             </div>
@@ -377,24 +512,32 @@ function AdminDashboard() {
 
 
                                     <span className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">
+
                                         Revenue
+
                                     </span>
 
                                 </div>
 
 
                                 <p className="mt-5 text-sm text-gray-500">
+
                                     Total Revenue
+
                                 </p>
 
 
                                 <h2 className="mt-1 text-3xl font-bold">
-                                    $0.00
+
+                                    ${formattedRevenue}
+
                                 </h2>
 
 
                                 <p className="mt-2 text-xs text-gray-400">
+
                                     All time sales
+
                                 </p>
 
                             </div>
@@ -417,24 +560,32 @@ function AdminDashboard() {
 
 
                                     <span className="rounded-lg bg-purple-50 px-2 py-1 text-xs font-semibold text-purple-600">
+
                                         Orders
+
                                     </span>
 
                                 </div>
 
 
                                 <p className="mt-5 text-sm text-gray-500">
+
                                     Total Orders
+
                                 </p>
 
 
                                 <h2 className="mt-1 text-3xl font-bold">
-                                    0
+
+                                    {stats.totalOrders}
+
                                 </h2>
 
 
                                 <p className="mt-2 text-xs text-gray-400">
+
                                     Customer orders
+
                                 </p>
 
                             </div>
@@ -457,24 +608,32 @@ function AdminDashboard() {
 
 
                                     <span className="rounded-lg bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+
                                         Inventory
+
                                     </span>
 
                                 </div>
 
 
                                 <p className="mt-5 text-sm text-gray-500">
+
                                     Products
+
                                 </p>
 
 
                                 <h2 className="mt-1 text-3xl font-bold">
-                                    0
+
+                                    {stats.totalProducts}
+
                                 </h2>
 
 
                                 <p className="mt-2 text-xs text-gray-400">
+
                                     Products in store
+
                                 </p>
 
                             </div>
@@ -497,24 +656,32 @@ function AdminDashboard() {
 
 
                                     <span className="rounded-lg bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-600">
+
                                         Customers
+
                                     </span>
 
                                 </div>
 
 
                                 <p className="mt-5 text-sm text-gray-500">
+
                                     Registered Users
+
                                 </p>
 
 
                                 <h2 className="mt-1 text-3xl font-bold">
-                                    0
+
+                                    {stats.totalCustomers}
+
                                 </h2>
 
 
                                 <p className="mt-2 text-xs text-gray-400">
+
                                     Store customers
+
                                 </p>
 
                             </div>
@@ -535,11 +702,15 @@ function AdminDashboard() {
                                 <div>
 
                                     <h2 className="text-xl font-bold">
+
                                         Quick Management
+
                                     </h2>
 
                                     <p className="mt-1 text-sm text-gray-500">
+
                                         Manage the most important parts of your store.
+
                                     </p>
 
                                 </div>
@@ -589,12 +760,16 @@ function AdminDashboard() {
 
 
                                     <h3 className="mt-8 text-lg font-bold">
+
                                         Products
+
                                     </h3>
 
 
                                     <p className="mt-2 text-sm leading-6 text-gray-500">
+
                                         Add, edit, delete and manage your store products.
+
                                     </p>
 
                                 </Link>
@@ -627,12 +802,16 @@ function AdminDashboard() {
 
 
                                     <h3 className="mt-8 text-lg font-bold">
+
                                         Categories
+
                                     </h3>
 
 
                                     <p className="mt-2 text-sm leading-6 text-gray-500">
+
                                         Organize and manage your product categories.
+
                                     </p>
 
                                 </Link>
@@ -665,12 +844,16 @@ function AdminDashboard() {
 
 
                                     <h3 className="mt-8 text-lg font-bold">
+
                                         Orders
+
                                     </h3>
 
 
                                     <p className="mt-2 text-sm leading-6 text-gray-500">
+
                                         View and manage customer orders and payments.
+
                                     </p>
 
                                 </Link>
@@ -703,12 +886,16 @@ function AdminDashboard() {
 
 
                                     <h3 className="mt-8 text-lg font-bold">
+
                                         Customers
+
                                     </h3>
 
 
                                     <p className="mt-2 text-sm leading-6 text-gray-500">
+
                                         View and manage registered customers.
+
                                     </p>
 
                                 </Link>
@@ -736,11 +923,15 @@ function AdminDashboard() {
                                     <div>
 
                                         <h2 className="text-lg font-bold">
+
                                             Store Overview
+
                                         </h2>
 
                                         <p className="mt-1 text-sm text-gray-500">
+
                                             Current store status
+
                                         </p>
 
                                     </div>
@@ -774,11 +965,15 @@ function AdminDashboard() {
                                             <div>
 
                                                 <p className="text-sm text-gray-500">
+
                                                     Inventory
+
                                                 </p>
 
                                                 <p className="font-bold">
-                                                    No data yet
+
+                                                    {stats.totalStock} units
+
                                                 </p>
 
                                             </div>
@@ -787,7 +982,9 @@ function AdminDashboard() {
 
 
                                         <p className="mt-4 text-xs text-gray-400">
-                                            Product inventory will appear here.
+
+                                            Total quantity currently available across all products.
+
                                         </p>
 
                                     </div>
@@ -810,11 +1007,15 @@ function AdminDashboard() {
                                             <div>
 
                                                 <p className="text-sm text-gray-500">
+
                                                     Low Stock
+
                                                 </p>
 
                                                 <p className="font-bold">
-                                                    0 products
+
+                                                    {stats.lowStockProducts} products
+
                                                 </p>
 
                                             </div>
@@ -823,8 +1024,49 @@ function AdminDashboard() {
 
 
                                         <p className="mt-4 text-xs text-gray-400">
-                                            Low-stock products will appear here.
+
+                                            Products with 5 or fewer units remaining.
+
                                         </p>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                {/* Out of Stock */}
+
+                                <div className="mt-4 rounded-xl bg-gray-50 p-5">
+
+                                    <div className="flex items-center justify-between">
+
+                                        <div className="flex items-center gap-3">
+
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-500">
+
+                                                <AlertTriangle size={20} />
+
+                                            </div>
+
+
+                                            <div>
+
+                                                <p className="text-sm text-gray-500">
+
+                                                    Out of Stock
+
+                                                </p>
+
+                                                <p className="font-bold">
+
+                                                    {stats.outOfStockProducts} products
+
+                                                </p>
+
+                                            </div>
+
+                                        </div>
 
                                     </div>
 
@@ -842,11 +1084,15 @@ function AdminDashboard() {
                                 <div className="mb-6">
 
                                     <h2 className="text-lg font-bold">
+
                                         Admin Account
+
                                     </h2>
 
                                     <p className="mt-1 text-sm text-gray-500">
+
                                         Your administrator information
+
                                     </p>
 
                                 </div>
@@ -865,12 +1111,16 @@ function AdminDashboard() {
                                     <div className="min-w-0">
 
                                         <h3 className="truncate font-bold">
+
                                             {user?.name || "Administrator"}
+
                                         </h3>
 
 
                                         <p className="truncate text-sm text-gray-500">
+
                                             {user?.email || "No email"}
+
                                         </p>
 
                                     </div>
@@ -885,11 +1135,15 @@ function AdminDashboard() {
                                     <div className="flex justify-between border-b border-gray-100 pb-3">
 
                                         <span className="text-gray-500">
+
                                             Account Type
+
                                         </span>
 
                                         <span className="font-semibold">
+
                                             Administrator
+
                                         </span>
 
                                     </div>
@@ -898,11 +1152,15 @@ function AdminDashboard() {
                                     <div className="flex justify-between border-b border-gray-100 pb-3">
 
                                         <span className="text-gray-500">
+
                                             Role
+
                                         </span>
 
                                         <span className="font-semibold text-emerald-600">
+
                                             {user?.role || "ADMIN"}
+
                                         </span>
 
                                     </div>
@@ -911,11 +1169,15 @@ function AdminDashboard() {
                                     <div className="flex justify-between">
 
                                         <span className="text-gray-500">
+
                                             Email
+
                                         </span>
 
                                         <span className="max-w-[170px] truncate font-semibold">
+
                                             {user?.email || "-"}
+
                                         </span>
 
                                     </div>
@@ -961,14 +1223,18 @@ function AdminDashboard() {
                                         />
 
                                         <h2 className="font-bold text-emerald-600">
+
                                             Store Management
+
                                         </h2>
 
                                     </div>
 
 
                                     <p className="mt-2 text-sm text-gray-600">
+
                                         Keep your products, categories, customers and orders organized.
+
                                     </p>
 
                                 </div>

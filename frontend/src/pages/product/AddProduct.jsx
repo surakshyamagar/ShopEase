@@ -33,13 +33,14 @@ function AddProduct() {
         description: "",
         price: "",
         stock: "",
-        image: "",
+        image: null,
         category: "",
     });
 
 
     useEffect(() => {
 
+        // eslint-disable-next-line react-hooks/immutability
         loadCategories();
 
     }, []);
@@ -73,49 +74,44 @@ function AddProduct() {
 
 
     const handleSubmit = async (e) => {
-
         e.preventDefault();
-
 
         try {
 
             setLoading(true);
 
+            const formData = new FormData();
 
-            await createProduct({
+            formData.append("name", form.name);
+            formData.append("description", form.description);
+            formData.append("price", Number(form.price));
+            formData.append("stock", Number(form.stock));
+            formData.append("category", form.category);
 
-                name: form.name,
+            if (form.image) {
+                formData.append("image", form.image);
+            }
 
-                description: form.description,
-
-                price: Number(form.price),
-
-                stock: Number(form.stock),
-
-                image: form.image,
-
-                category: form.category,
-
-            });
-
+            await createProduct(formData);
 
             alert("Product created successfully!");
 
             navigate("/products");
 
-
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
-            alert("Failed to create product");
+            alert(
+                error.response?.data?.message ||
+                "Failed to create product"
+            );
 
         } finally {
 
             setLoading(false);
 
         }
-
     };
 
 
@@ -485,11 +481,15 @@ function AddProduct() {
 
 
                                 <input
-                                    type="text"
+                                    type="file"
                                     name="image"
-                                    value={form.image}
-                                    onChange={handleChange}
-                                    placeholder="https://example.com/image.jpg"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        setForm({
+                                            ...form,
+                                            image: e.target.files[0],
+                                        });
+                                    }}
                                     className="
                                         w-full
                                         px-4 py-3
@@ -507,17 +507,15 @@ function AddProduct() {
                                 {/* IMAGE PREVIEW */}
 
                                 {form.image && (
-
                                     <div className="mt-4 rounded-xl overflow-hidden border border-gray-200">
 
                                         <img
-                                            src={form.image}
+                                            src={URL.createObjectURL(form.image)}
                                             alt="Preview"
                                             className="w-full h-40 object-cover"
                                         />
 
                                     </div>
-
                                 )}
 
                             </div>

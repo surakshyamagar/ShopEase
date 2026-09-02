@@ -17,7 +17,7 @@ const createReview = async(req, res) => {
         const review = await Review.create({
             user: userId,
             product,
-            rrating,
+            rating,
             comment,
         });
 
@@ -39,12 +39,12 @@ const createReview = async(req, res) => {
 const getProductReviews = async (req, res) => {
     try{
         // Take the id from the URL and store it in a variable called id.
-        const id = req.params.id;
+        const productId = req.params.productId;
 
         const reviews = await Review.find({
             // find reviews for product whose id equals to product 
             // id
-            product: id,
+            product: productId,
         })
         // from user filed (model) go to User collection and bring out name along with id
         // populte = same as include in postgres

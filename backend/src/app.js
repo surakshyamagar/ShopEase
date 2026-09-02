@@ -11,7 +11,9 @@ import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/orderRoutes.js"
-
+import userRoutes from "./routes/userRoutes.js";
+import adminRoutes from "./routes/ADMIN/adminRoutes.js";
+import userDashboardRoutes from "./routes/CUSTOMER/userDashboardRoutes.js"
 // Create Express application
 // app = whole project, start all routes with app (app.use)
 const app = express();
@@ -58,7 +60,15 @@ app.get("/", (req, res) => {
   // order
   app.use("/order", orderRoutes);
 
+  // review
   app.use("/review", reviewRoutes);
   
+  // user
+  app.use("/users", userRoutes);
 
+  // admin
+  app.use("/api/admin", adminRoutes);
+
+  // Customer dashboard
+  app.use("/api/user", userDashboardRoutes); 
 export default app;

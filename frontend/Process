@@ -4,3 +4,119 @@ npm i react-router-dom
 npm i axios
 npm i lucide-react
 npm install tailwindcss @tailwindcss/vite
+
+
+frontend/
+│
+├── public/
+│   └── ...
+│
+├── src/
+│   │
+│   ├── assets/
+│   │   ├── images/
+│   │   └── icons/
+│   │
+│   ├── components/
+│   │   │
+│   │   ├── common/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Loader.jsx
+│   │   │   ├── ErrorMessage.jsx
+│   │   │   ├── EmptyState.jsx
+│   │   │   └── Modal.jsx
+│   │   │
+│   │   ├── layout/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── UserNavbar.jsx
+│   │   │   └── AdminNavbar.jsx
+│   │   │
+│   │   ├── product/
+│   │   │   ├── ProductCard.jsx
+│   │   │   ├── ProductGrid.jsx
+│   │   │   ├── ProductSearch.jsx
+│   │   │   └── ProductFilter.jsx
+│   │   │
+│   │   ├── cart/
+│   │   │   ├── CartItem.jsx
+│   │   │   ├── CartSummary.jsx
+│   │   │   └── QuantityControl.jsx
+│   │   │
+│   │   ├── order/
+│   │   │   ├── OrderCard.jsx
+│   │   │   ├── OrderStatus.jsx
+│   │   │   └── ShippingForm.jsx
+│   │   │
+│   │   └── review/
+│   │       ├── ReviewCard.jsx
+│   │       ├── ReviewForm.jsx
+│   │       └── ReviewList.jsx
+│   │
+│   ├── context/
+│   │   └── AuthContext.jsx
+│   │
+│   ├── dashboards/
+│   │   ├── UserDashboard.jsx
+│   │   └── AdminDashboard.jsx
+│   │
+│   ├── layouts/
+│   │   ├── AuthLayout.jsx
+│   │   ├── UserLayout.jsx
+│   │   └── AdminLayout.jsx
+│   │
+│   ├── pages/
+│   │   │
+│   │   ├── auth/
+│   │   │   ├── Login.jsx
+│   │   │   └── Register.jsx
+│   │   │
+│   │   ├── product/
+│   │   │   ├── Product.jsx
+│   │   │   ├── ProductDetails.jsx
+│   │   │   ├── AddProduct.jsx
+│   │   │   └── EditProduct.jsx
+│   │   │
+│   │   ├── categories/
+│   │   │   └── Category.jsx
+│   │   │
+│   │   ├── cart/
+│   │   │   └── Cart.jsx
+│   │   │
+│   │   ├── order/
+│   │   │   ├── Orders.jsx
+│   │   │   ├── OrderDetails.jsx
+│   │   │   └── Checkout.jsx
+│   │   │
+│   │   └── review/
+│   │       └── ...
+│   │
+│   ├── routes/
+│   │   ├── AppRoutes.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   ├── RoleBasedRoute.jsx
+│   │   └── DashboardRedirect.jsx
+│   │
+│   ├── services/
+│   │   ├── api.js
+│   │   ├── authService.js
+│   │   ├── productService.js
+│   │   ├── categoryService.js
+│   │   ├── cartService.js
+│   │   ├── orderService.js
+│   │   └── reviewService.js
+│   │
+│   ├── utils/
+│   │   ├── formatDate.js
+│   │   ├── formatPrice.js
+│   │   └── constants.js
+│   │
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+│
+├── .env
+├── .gitignore
+├── package.json
+├── vite.config.js
+└── README.md

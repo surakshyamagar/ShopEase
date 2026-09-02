@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
     Plus,
     Pencil,
@@ -13,6 +14,8 @@ import {
     updateCategory,
     deleteCategory,
 } from "../../services/categoryService";
+
+import AdminNavbar from "../../components/AdminNavbar";
 
 function Category() {
 
@@ -58,6 +61,7 @@ function Category() {
             setLoading(false);
 
         }
+
     };
 
 
@@ -147,7 +151,6 @@ function Category() {
 
         e.preventDefault();
 
-
         if (!formData.name.trim()) {
 
             alert("Category name is required");
@@ -180,7 +183,6 @@ function Category() {
 
             // Refresh categories
             await loadCategories();
-
 
             // Close form
             handleCancel();
@@ -246,7 +248,14 @@ function Category() {
         <div className="min-h-screen bg-gray-50">
 
             {/* =================================================
-                HEADER
+                ADMIN NAVBAR
+            ================================================= */}
+
+            <AdminNavbar />
+
+
+            {/* =================================================
+                PAGE HEADER
             ================================================= */}
 
             <div className="border-b border-gray-200 bg-white">
@@ -673,6 +682,7 @@ function Category() {
             </main>
 
         </div>
+
     );
 }
 
