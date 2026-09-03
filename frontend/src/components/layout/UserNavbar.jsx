@@ -14,6 +14,7 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 
+
 function UserNavbar() {
 
     const location = useLocation();
@@ -23,8 +24,22 @@ function UserNavbar() {
     const [mobileOpen, setMobileOpen] = useState(false);
 
 
+    // ==========================================
+    // ACTIVE ROUTE
+    // ==========================================
+
     const isActive = (path) => {
         return location.pathname === path;
+    };
+
+
+    const isProductsActive = () => {
+        return location.pathname.startsWith("/shop");
+    };
+
+
+    const isOrdersActive = () => {
+        return location.pathname.startsWith("/orders");
     };
 
 
@@ -34,9 +49,11 @@ function UserNavbar() {
 
 
     return (
+
         <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
 
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+
 
                 {/* ================= BRAND ================= */}
 
@@ -81,6 +98,9 @@ function UserNavbar() {
 
                 <nav className="hidden items-center gap-1 lg:flex">
 
+
+                    {/* Dashboard */}
+
                     <Link
                         to="/customer/dashboard"
                         className={`
@@ -96,13 +116,18 @@ function UserNavbar() {
                             }
                         `}
                     >
+
                         <LayoutDashboard size={18} />
+
                         Dashboard
+
                     </Link>
 
 
+                    {/* Products */}
+
                     <Link
-                        to="/products"
+                        to="/shop"
                         className={`
                             flex items-center gap-2
                             rounded-lg
@@ -110,16 +135,21 @@ function UserNavbar() {
                             text-sm font-medium
                             transition
                             ${
-                                isActive("/products")
+                                isProductsActive()
                                     ? "bg-emerald-50 text-emerald-600"
                                     : "text-gray-600 hover:bg-gray-50 hover:text-emerald-600"
                             }
                         `}
                     >
+
                         <ShoppingBag size={18} />
+
                         Products
+
                     </Link>
 
+
+                    {/* Cart */}
 
                     <Link
                         to="/cart"
@@ -136,10 +166,15 @@ function UserNavbar() {
                             }
                         `}
                     >
+
                         <ShoppingCart size={18} />
+
                         Cart
+
                     </Link>
 
+
+                    {/* Orders */}
 
                     <Link
                         to="/orders"
@@ -150,14 +185,17 @@ function UserNavbar() {
                             text-sm font-medium
                             transition
                             ${
-                                location.pathname.startsWith("/orders")
+                                isOrdersActive()
                                     ? "bg-emerald-50 text-emerald-600"
                                     : "text-gray-600 hover:bg-gray-50 hover:text-emerald-600"
                             }
                         `}
                     >
+
                         <Package size={18} />
+
                         Orders
+
                     </Link>
 
                 </nav>
@@ -179,24 +217,32 @@ function UserNavbar() {
                             bg-emerald-100
                             text-emerald-700
                         ">
+
                             <UserCircle size={22} />
+
                         </div>
 
 
                         <div>
 
                             <p className="text-sm font-semibold text-gray-900">
+
                                 {user?.name || "Customer"}
+
                             </p>
 
                             <p className="text-xs text-gray-500">
+
                                 Customer
+
                             </p>
 
                         </div>
 
                     </div>
 
+
+                    {/* Logout */}
 
                     <button
                         onClick={logout}
@@ -218,8 +264,11 @@ function UserNavbar() {
                             hover:text-red-600
                         "
                     >
+
                         <LogOut size={17} />
+
                         Logout
+
                     </button>
 
                 </div>
@@ -237,11 +286,13 @@ function UserNavbar() {
                         lg:hidden
                     "
                 >
+
                     {mobileOpen ? (
                         <X size={24} />
                     ) : (
                         <Menu size={24} />
                     )}
+
                 </button>
 
             </div>
@@ -255,48 +306,108 @@ function UserNavbar() {
 
                     <div className="flex flex-col gap-1">
 
+
+                        {/* Dashboard */}
+
                         <Link
                             to="/customer/dashboard"
                             onClick={closeMobileMenu}
-                            className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                            className={`
+                                flex items-center gap-3
+                                rounded-lg
+                                px-4 py-3
+                                text-gray-700
+                                ${
+                                    isActive("/customer/dashboard")
+                                        ? "bg-emerald-50 text-emerald-600"
+                                        : "hover:bg-emerald-50 hover:text-emerald-600"
+                                }
+                            `}
                         >
+
                             <LayoutDashboard size={18} />
+
                             Dashboard
+
                         </Link>
 
+
+                        {/* Products */}
 
                         <Link
-                            to="/products"
+                            to="/shop"
                             onClick={closeMobileMenu}
-                            className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                            className={`
+                                flex items-center gap-3
+                                rounded-lg
+                                px-4 py-3
+                                ${
+                                    isProductsActive()
+                                        ? "bg-emerald-50 text-emerald-600"
+                                        : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                                }
+                            `}
                         >
+
                             <ShoppingBag size={18} />
+
                             Products
+
                         </Link>
 
+
+                        {/* Cart */}
 
                         <Link
                             to="/cart"
                             onClick={closeMobileMenu}
-                            className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                            className={`
+                                flex items-center gap-3
+                                rounded-lg
+                                px-4 py-3
+                                ${
+                                    isActive("/cart")
+                                        ? "bg-emerald-50 text-emerald-600"
+                                        : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                                }
+                            `}
                         >
+
                             <ShoppingCart size={18} />
+
                             Cart
+
                         </Link>
 
+
+                        {/* Orders */}
 
                         <Link
                             to="/orders"
                             onClick={closeMobileMenu}
-                            className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                            className={`
+                                flex items-center gap-3
+                                rounded-lg
+                                px-4 py-3
+                                ${
+                                    isOrdersActive()
+                                        ? "bg-emerald-50 text-emerald-600"
+                                        : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-600"
+                                }
+                            `}
                         >
+
                             <Package size={18} />
+
                             Orders
+
                         </Link>
 
 
                         <div className="my-2 border-t border-gray-200" />
 
+
+                        {/* User */}
 
                         <div className="flex items-center gap-3 px-4 py-3">
 
@@ -310,23 +421,32 @@ function UserNavbar() {
                                 bg-emerald-100
                                 text-emerald-700
                             ">
+
                                 <UserCircle size={20} />
+
                             </div>
+
 
                             <div>
 
                                 <p className="text-sm font-semibold text-gray-900">
+
                                     {user?.name || "Customer"}
+
                                 </p>
 
                                 <p className="text-xs text-gray-500">
+
                                     Customer
+
                                 </p>
 
                             </div>
 
                         </div>
 
+
+                        {/* Logout */}
 
                         <button
                             onClick={logout}
@@ -343,8 +463,11 @@ function UserNavbar() {
                                 text-red-600
                             "
                         >
+
                             <LogOut size={18} />
+
                             Logout
+
                         </button>
 
                     </div>
@@ -354,7 +477,10 @@ function UserNavbar() {
             )}
 
         </header>
+
     );
+
 }
+
 
 export default UserNavbar;

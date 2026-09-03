@@ -14,8 +14,8 @@ import {
     updateCategory,
     deleteCategory,
 } from "../../services/categoryService";
-
-import AdminNavbar from "../../components/AdminNavbar";
+import AdminNavbar from "../../components/layout/AdminNavbar";
+// import AdminNavbar from "../../components/AdminNavbar";
 
 function Category() {
 
@@ -68,6 +68,7 @@ function Category() {
     // Load categories when page opens
     useEffect(() => {
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadCategories();
 
     }, []);

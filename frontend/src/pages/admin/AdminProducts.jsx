@@ -17,7 +17,7 @@ import {
 
 import { getCategories } from "../../services/categoryService";
 
-import AdminNavbar from "../../components/AdminNavbar";
+import AdminNavbar from "../../components/layout/AdminNavbar";
 
 
 function AdminProducts() {
@@ -36,6 +36,7 @@ function AdminProducts() {
 
     useEffect(() => {
 
+        // eslint-disable-next-line react-hooks/immutability
         loadData();
 
     }, []);
@@ -49,18 +50,18 @@ function AdminProducts() {
 
             const [
                 productsData,
-                categoriesData
+                categoriesData,
             ] = await Promise.all([
                 getProducts(),
                 getCategories(),
             ]);
 
-            setProducts(productsData);
-            setCategories(categoriesData);
+            setProducts(productsData || []);
+            setCategories(categoriesData || []);
 
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
         } finally {
 
@@ -98,7 +99,7 @@ function AdminProducts() {
 
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
             alert(
                 error.response?.data?.message ||
@@ -193,7 +194,7 @@ function AdminProducts() {
                     </div>
 
 
-                    {/* Add Product */}
+                    {/* ADD PRODUCT */}
 
                     <Link
                         to="/admin/products/add"
@@ -383,119 +384,139 @@ function AdminProducts() {
 
 
                                     {/* =================================================
-                                        IMAGE
+                                        CLICKABLE PRODUCT AREA
                                     ================================================= */}
 
-                                    <div className="relative h-56 overflow-hidden bg-gray-100">
+                                    <Link
+                                        to={`/products/${product._id}`}
+                                        className="block"
+                                    >
 
-                                        {product.image ? (
+                                        {/* =================================================
+                                            IMAGE
+                                        ================================================= */}
 
-                                            <img
-                                                src={product.image}
-                                                alt={product.name}
-                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                            />
+                                        <div className="relative h-56 overflow-hidden bg-gray-100">
 
-                                        ) : (
+                                            {product.image ? (
 
-                                            <div className="flex h-full flex-col items-center justify-center text-gray-400">
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.name}
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                />
 
-                                                <Package size={35} />
+                                            ) : (
 
-                                                <span className="mt-2 text-sm">
+                                                <div className="flex h-full flex-col items-center justify-center text-gray-400">
 
-                                                    No image
+                                                    <Package size={35} />
 
-                                                </span>
+                                                    <span className="mt-2 text-sm">
 
-                                            </div>
+                                                        No image
 
-                                        )}
+                                                    </span>
 
+                                                </div>
 
-                                        {/* CATEGORY BADGE */}
-
-                                        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-emerald-600 shadow-sm backdrop-blur">
-
-                                            {getCategoryName(product.category)}
-
-                                        </span>
-
-                                    </div>
+                                            )}
 
 
-                                    {/* =================================================
-                                        CONTENT
-                                    ================================================= */}
+                                            {/* CATEGORY BADGE */}
 
-                                    <div className="p-5">
+                                            <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-emerald-600 shadow-sm backdrop-blur">
 
-                                        <h2 className="truncate text-lg font-semibold text-gray-900">
+                                                {getCategoryName(
+                                                    product.category
+                                                )}
 
-                                            {product.name}
-
-                                        </h2>
-
-
-                                        <p className="mt-2 line-clamp-2 min-h-10 text-sm text-gray-500">
-
-                                            {product.description}
-
-                                        </p>
-
-
-                                        {/* PRICE / STOCK */}
-
-                                        <div className="mt-5 flex items-center justify-between">
-
-
-                                            {/* PRICE */}
-
-                                            <div>
-
-                                                <p className="text-xl font-bold text-gray-900">
-
-                                                    ${Number(product.price).toFixed(2)}
-
-                                                </p>
-
-                                                <p className="mt-1 text-xs text-gray-400">
-
-                                                    Product Price
-
-                                                </p>
-
-                                            </div>
-
-
-                                            {/* STOCK */}
-
-                                            <div className="text-right">
-
-                                                <p
-                                                    className={`text-sm font-semibold ${
-                                                        product.stock > 0
-                                                            ? "text-emerald-600"
-                                                            : "text-red-600"
-                                                    }`}
-                                                >
-
-                                                    {product.stock > 0
-                                                        ? `${product.stock} in stock`
-                                                        : "Out of stock"}
-
-                                                </p>
-
-                                            </div>
+                                            </span>
 
                                         </div>
 
 
                                         {/* =================================================
-                                            ACTIONS
+                                            PRODUCT INFORMATION
                                         ================================================= */}
 
-                                        <div className="mt-5 flex gap-2">
+                                        <div className="p-5">
+
+                                            <h2 className="truncate text-lg font-semibold text-gray-900 transition group-hover:text-emerald-600">
+
+                                                {product.name}
+
+                                            </h2>
+
+
+                                            <p className="mt-2 line-clamp-2 min-h-10 text-sm text-gray-500">
+
+                                                {product.description}
+
+                                            </p>
+
+
+                                            {/* PRICE / STOCK */}
+
+                                            <div className="mt-5 flex items-center justify-between">
+
+
+                                                {/* PRICE */}
+
+                                                <div>
+
+                                                    <p className="text-xl font-bold text-gray-900">
+
+                                                        $
+                                                        {Number(
+                                                            product.price
+                                                        ).toFixed(2)}
+
+                                                    </p>
+
+                                                    <p className="mt-1 text-xs text-gray-400">
+
+                                                        Product Price
+
+                                                    </p>
+
+                                                </div>
+
+
+                                                {/* STOCK */}
+
+                                                <div className="text-right">
+
+                                                    <p
+                                                        className={`text-sm font-semibold ${
+                                                            product.stock > 0
+                                                                ? "text-emerald-600"
+                                                                : "text-red-600"
+                                                        }`}
+                                                    >
+
+                                                        {product.stock > 0
+                                                            ? `${product.stock} in stock`
+                                                            : "Out of stock"}
+
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </Link>
+
+
+                                    {/* =================================================
+                                        ACTIONS
+                                    ================================================= */}
+
+                                    <div className="px-5 pb-5">
+
+                                        <div className="flex gap-2">
 
 
                                             {/* EDIT */}
@@ -515,6 +536,7 @@ function AdminProducts() {
                                             {/* DELETE */}
 
                                             <button
+                                                type="button"
                                                 onClick={() =>
                                                     handleDelete(
                                                         product._id

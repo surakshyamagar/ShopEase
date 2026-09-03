@@ -14,8 +14,9 @@ import {
 
 import { createProduct } from "../../services/productService";
 import { getCategories } from "../../services/categoryService";
+import AdminNavbar from "../../components/layout/AdminNavbar";
 
-import AdminNavbar from "../../components/AdminNavbar";
+// import AdminNavbar from "../../components/AdminNavbar";
 
 
 function AddProduct() {
@@ -33,7 +34,7 @@ function AddProduct() {
         description: "",
         price: "",
         stock: "",
-        image: null,
+        image: "",
         category: "",
     });
 
@@ -74,29 +75,34 @@ function AddProduct() {
 
 
     const handleSubmit = async (e) => {
+
         e.preventDefault();
 
         try {
 
             setLoading(true);
 
-            const formData = new FormData();
 
-            formData.append("name", form.name);
-            formData.append("description", form.description);
-            formData.append("price", Number(form.price));
-            formData.append("stock", Number(form.stock));
-            formData.append("category", form.category);
+            const productData = {
+                name: form.name,
+                description: form.description,
+                price: Number(form.price),
+                stock: Number(form.stock),
+                category: form.category,
+                image: form.image
+                    ? `/products/${form.image}`
+                    : "",
+            };
 
-            if (form.image) {
-                formData.append("image", form.image);
-            }
 
-            await createProduct(formData);
+            await createProduct(productData);
+
 
             alert("Product created successfully!");
 
+
             navigate("/products");
+
 
         } catch (error) {
 
@@ -107,11 +113,13 @@ function AddProduct() {
                 "Failed to create product"
             );
 
+
         } finally {
 
             setLoading(false);
 
         }
+
     };
 
 
@@ -446,6 +454,7 @@ function AddProduct() {
                                         Select category
                                     </option>
 
+
                                     {categories.map((category) => (
 
                                         <option
@@ -480,16 +489,17 @@ function AddProduct() {
                                 </div>
 
 
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Image Filename
+                                </label>
+
+
                                 <input
-                                    type="file"
+                                    type="text"
                                     name="image"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        setForm({
-                                            ...form,
-                                            image: e.target.files[0],
-                                        });
-                                    }}
+                                    value={form.image}
+                                    onChange={handleChange}
+                                    placeholder="e.g. iphone.jpg"
                                     className="
                                         w-full
                                         px-4 py-3
@@ -500,22 +510,36 @@ function AddProduct() {
                                         focus:border-emerald-500
                                         focus:ring-4
                                         focus:ring-emerald-50
+                                        transition
                                     "
                                 />
+
+
+                                <p className="text-xs text-gray-400 mt-2">
+                                    Put the image inside
+                                    <span className="font-medium text-gray-500">
+                                        {" "}public/products/
+                                    </span>
+                                </p>
 
 
                                 {/* IMAGE PREVIEW */}
 
                                 {form.image && (
+
                                     <div className="mt-4 rounded-xl overflow-hidden border border-gray-200">
 
                                         <img
-                                            src={URL.createObjectURL(form.image)}
-                                            alt="Preview"
+                                            src={`/products/${form.image}`}
+                                            alt="Product Preview"
                                             className="w-full h-40 object-cover"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = "none";
+                                            }}
                                         />
 
                                     </div>
+
                                 )}
 
                             </div>
@@ -587,3 +611,4 @@ function AddProduct() {
 
 
 export default AddProduct;
+

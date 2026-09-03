@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -40,6 +41,7 @@ function AdminOrderDetails() {
 
     useEffect(() => {
 
+        // eslint-disable-next-line react-hooks/immutability
         loadOrder();
 
     }, [id]);

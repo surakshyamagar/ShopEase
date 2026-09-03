@@ -1,18 +1,3 @@
-// import { Navigate } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
-
-// function ProtectedRoute({ children }) {
-//   const { isAuthenticated } = useAuth();
-
-//   if (!isAuthenticated) {
-//     return <Navigate to="/" replace />;
-//   }
-
-//   return children;
-// }
-
-// export default ProtectedRoute;
-
 import { useState, useEffect } from "react";
 
 import api from "../services/api";

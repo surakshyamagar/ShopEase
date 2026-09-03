@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
@@ -29,6 +30,7 @@ function ProductReviews({ productId }) {
     // ==========================================
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/immutability
         loadReviews();
     }, [productId]);
 

@@ -5,8 +5,8 @@ import {
     getAllOrders,
     updateOrderStatus,
 } from "../../services/orderService";
-
-import AdminNavbar from "../../components/AdminNavbar";
+import AdminNavbar from "../../components/layout/AdminNavbar";
+// import AdminNavbar from "../../components/AdminNavbar";
 
 import {
     ShoppingBag,
@@ -43,6 +43,7 @@ function AdminOrders() {
 
     useEffect(() => {
 
+        // eslint-disable-next-line react-hooks/immutability
         loadOrders();
 
     }, []);

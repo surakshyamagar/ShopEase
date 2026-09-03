@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 
 import { getCustomers } from "../../services/userService";
-import AdminNavbar from "../../components/AdminNavbar";
+// import AdminNavbar from "../../components/AdminNavbar";
+import AdminNavbar from "../../components/layout/AdminNavbar";
 
 function AdminUsers() {
 
@@ -20,6 +21,7 @@ function AdminUsers() {
     // ================= LOAD CUSTOMERS =================
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/immutability
         loadCustomers();
     }, []);
 

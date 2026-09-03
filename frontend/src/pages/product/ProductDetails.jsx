@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-
-
+import {
+    Star,
+    Pencil,
+    Trash2,
+    User,
+    MessageSquare,
+    Send,
+    X,
+    ShoppingCart,
+} from "lucide-react";
 
 import {
     getProductReviews,
@@ -11,10 +19,11 @@ import {
     deleteReview,
 } from "../../services/reviewService";
 
-
 import { getProduct } from "../../services/productService";
 import { addToCart } from "../../services/cartService";
 import { useAuth } from "../../context/AuthContext";
+
+import UserNavbar from "../../components/layout/UserNavbar";
 
 
 function ProductDetails() {
@@ -64,6 +73,8 @@ function ProductDetails() {
 
     const [reviewLoading, setReviewLoading] = useState(false);
 
+    const [cartLoading, setCartLoading] = useState(false);
+
 
     // ==========================================
     // LOAD PRODUCT + REVIEWS
@@ -71,6 +82,7 @@ function ProductDetails() {
 
     useEffect(() => {
 
+        // eslint-disable-next-line react-hooks/immutability
         loadData();
 
     }, [id]);
@@ -81,23 +93,46 @@ function ProductDetails() {
         try {
 
             setLoading(true);
-
             setError("");
 
+            // ==================================
+            // LOAD PRODUCT
+            // ==================================
 
             const productData = await getProduct(id);
 
-            const reviewsData = await getProductReviews(id);
-
-
             setProduct(productData);
 
-            setReviews(reviewsData);
 
+            // ==================================
+            // LOAD REVIEWS SEPARATELY
+            // ==================================
+            // If reviews fail, product should
+            // still be displayed.
+
+            try {
+
+                const reviewsData = await getProductReviews(id);
+
+                setReviews(reviewsData || []);
+
+            } catch (reviewError) {
+
+                console.error(
+                    "Failed to load reviews:",
+                    reviewError
+                );
+
+                setReviews([]);
+
+            }
 
         } catch (error) {
 
-            console.log(error);
+            console.error(
+                "Failed to load product:",
+                error
+            );
 
             setError(
                 error.response?.data?.message ||
@@ -121,18 +156,24 @@ function ProductDetails() {
 
         try {
 
+            setCartLoading(true);
+
             await addToCart(id, 1);
 
             alert("Product added to cart");
 
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
             alert(
                 error.response?.data?.message ||
                 "Failed to add product to cart"
             );
+
+        } finally {
+
+            setCartLoading(false);
 
         }
 
@@ -140,7 +181,7 @@ function ProductDetails() {
 
 
     // ==========================================
-    // SUBMIT REVIEW
+    // SUBMIT / UPDATE REVIEW
     // ==========================================
 
     const handleSubmitReview = async (e) => {
@@ -168,28 +209,18 @@ function ProductDetails() {
 
             if (editingReview) {
 
-                const updatedReview = await updateReview(
+                await updateReview(
                     editingReview._id,
                     {
                         rating,
-                        comment,
+                        comment: comment.trim(),
                     }
                 );
 
-
-                setReviews(
-                    reviews.map((review) =>
-                        review._id === updatedReview._id
-                            ? updatedReview
-                            : review
-                    )
-                );
-
-
-                setEditingReview(null);
-
+                alert("Review updated successfully");
 
             }
+
 
             // ==================================
             // CREATE REVIEW
@@ -197,35 +228,40 @@ function ProductDetails() {
 
             else {
 
-                const newReview = await createReview({
-
+                await createReview({
                     product: id,
-
                     rating,
-
-                    comment,
-
+                    comment: comment.trim(),
                 });
 
-
-                setReviews([
-                    newReview,
-                    ...reviews,
-                ]);
+                alert("Review added successfully");
 
             }
 
 
-            // Clear form
+            // ==================================
+            // RELOAD REVIEWS
+            // ==================================
+
+            const reviewsData =
+                await getProductReviews(id);
+
+            setReviews(reviewsData || []);
+
+
+            // ==================================
+            // CLEAR FORM
+            // ==================================
+
+            setEditingReview(null);
 
             setRating(5);
 
             setComment("");
 
-
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
             alert(
                 error.response?.data?.message ||
@@ -249,9 +285,15 @@ function ProductDetails() {
 
         setEditingReview(review);
 
-        setRating(review.rating);
+        setRating(Number(review.rating));
 
-        setComment(review.comment);
+        setComment(review.comment || "");
+
+
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth",
+        });
 
     };
 
@@ -294,16 +336,34 @@ function ProductDetails() {
             await deleteReview(reviewId);
 
 
-            setReviews(
-                reviews.filter(
-                    (review) => review._id !== reviewId
-                )
-            );
+            // Reload reviews
 
+            const reviewsData =
+                await getProductReviews(id);
+
+            setReviews(reviewsData || []);
+
+
+            // Clear editing state if necessary
+
+            if (
+                editingReview?._id === reviewId
+            ) {
+
+                setEditingReview(null);
+
+                setRating(5);
+
+                setComment("");
+
+            }
+
+
+            alert("Review deleted successfully");
 
         } catch (error) {
 
-            console.log(error);
+            console.error(error);
 
             alert(
                 error.response?.data?.message ||
@@ -316,12 +376,50 @@ function ProductDetails() {
 
 
     // ==========================================
+    // REVIEW SUMMARY
+    // ==========================================
+
+    const averageRating =
+        reviews.length > 0
+            ? (
+                reviews.reduce(
+                    (total, review) =>
+                        total + Number(review.rating),
+                    0
+                ) / reviews.length
+            ).toFixed(1)
+            : "0.0";
+
+
+    // ==========================================
     // LOADING
     // ==========================================
 
     if (loading) {
 
-        return <p>Loading product...</p>;
+        return (
+
+            <div className="min-h-screen bg-gray-50">
+
+                <UserNavbar />
+
+                <div className="flex min-h-[calc(100vh-64px)] items-center justify-center">
+
+                    <div className="text-center">
+
+                        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+
+                        <p className="font-medium text-gray-600">
+                            Loading product...
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        );
 
     }
 
@@ -334,13 +432,32 @@ function ProductDetails() {
 
         return (
 
-            <div>
+            <div className="min-h-screen bg-gray-50">
 
-                <p>{error}</p>
+                <UserNavbar />
 
-                <Link to="/products">
-                    Back to Products
-                </Link>
+                <div className="flex min-h-[calc(100vh-64px)] items-center justify-center px-6">
+
+                    <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+
+                        <h2 className="mb-3 text-xl font-bold text-red-600">
+                            Something went wrong
+                        </h2>
+
+                        <p className="mb-6 text-gray-600">
+                            {error}
+                        </p>
+
+                        <Link
+                            to="/shop"
+                            className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700"
+                        >
+                            Back to Products
+                        </Link>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -355,7 +472,34 @@ function ProductDetails() {
 
     if (!product) {
 
-        return <p>Product not found.</p>;
+        return (
+
+            <div className="min-h-screen bg-gray-50">
+
+                <UserNavbar />
+
+                <div className="flex min-h-[calc(100vh-64px)] items-center justify-center">
+
+                    <div className="text-center">
+
+                        <h2 className="mb-4 text-xl font-bold text-gray-800">
+                            Product not found
+                        </h2>
+
+                        <Link
+                            to="/shop"
+                            className="font-semibold text-emerald-600 hover:underline"
+                        >
+                            Back to Products
+                        </Link>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        );
 
     }
 
@@ -366,95 +510,208 @@ function ProductDetails() {
 
     return (
 
-        <div>
-
-            {/* ==================================
-                NAVIGATION
-            ================================== */}
-
-            <nav>
-
-                <Link to="/customer/dashboard">
-                    Dashboard
-                </Link>
-
-                {" | "}
-
-                <Link to="/products">
-                    Products
-                </Link>
-
-                {" | "}
-
-                <Link to="/cart">
-                    Cart
-                </Link>
-
-                {" | "}
-
-                <Link to="/orders">
-                    Orders
-                </Link>
-
-            </nav>
-
-
-            <hr />
+        <div className="min-h-screen bg-gray-50">
 
 
             {/* ==================================
-                PRODUCT
+                USER NAVBAR
             ================================== */}
 
-            <section className="max-w-5xl mx-auto p-6">
+            <UserNavbar />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                    {/* PRODUCT IMAGE */}
-                    <div className="bg-gray-100 rounded-2xl overflow-hidden">
+            {/* ==================================
+                PRODUCT SECTION
+            ================================== */}
+
+            <section className="mx-auto max-w-6xl px-6 py-10">
+
+
+                {/* BREADCRUMB */}
+
+                <div className="mb-8 flex items-center gap-2 text-sm">
+
+                    <Link
+                        to="/customer/dashboard"
+                        className="text-gray-400 transition hover:text-emerald-600"
+                    >
+                        Dashboard
+                    </Link>
+
+                    <span className="text-gray-300">
+                        /
+                    </span>
+
+                    <Link
+                        to="/shop"
+                        className="text-gray-400 transition hover:text-emerald-600"
+                    >
+                        Products
+                    </Link>
+
+                    <span className="text-gray-300">
+                        /
+                    </span>
+
+                    <span className="max-w-[200px] truncate font-medium text-gray-700">
+                        {product.name}
+                    </span>
+
+                </div>
+
+
+                {/* PRODUCT GRID */}
+
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+
+
+                    {/* ==================================
+                        PRODUCT IMAGE
+                    ================================== */}
+
+                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
 
                         {product.image ? (
+
                             <img
                                 src={product.image}
                                 alt={product.name}
-                                className="w-full h-[450px] object-cover"
+                                className="h-[450px] w-full object-cover"
                             />
+
                         ) : (
-                            <div className="w-full h-[450px] flex items-center justify-center text-gray-400">
+
+                            <div className="flex h-[450px] w-full items-center justify-center bg-gray-100 text-gray-400">
                                 No image available
                             </div>
+
                         )}
 
                     </div>
 
 
-                    {/* PRODUCT INFORMATION */}
+                    {/* ==================================
+                        PRODUCT INFORMATION
+                    ================================== */}
+
                     <div className="flex flex-col justify-center">
 
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                        <p className="mb-2 text-sm font-semibold text-emerald-600">
+                            ShopEase Product
+                        </p>
+
+
+                        <h1 className="mb-4 text-4xl font-bold text-gray-900">
                             {product.name}
                         </h1>
 
-                        <p className="text-gray-600 mb-6">
+
+                        <p className="mb-6 leading-7 text-gray-600">
                             {product.description}
                         </p>
 
-                        <p className="text-2xl font-bold text-emerald-600 mb-4">
+
+                        {/* PRODUCT RATING */}
+
+                        <div className="mb-5 flex items-center gap-2">
+
+                            <div className="flex items-center gap-1">
+
+                                {[1, 2, 3, 4, 5].map(
+                                    (star) => (
+
+                                        <Star
+                                            key={star}
+                                            size={18}
+                                            className={
+                                                star <=
+                                                Math.round(
+                                                    Number(
+                                                        averageRating
+                                                    )
+                                                )
+                                                    ? "fill-yellow-400 text-yellow-400"
+                                                    : "text-gray-300"
+                                            }
+                                        />
+
+                                    )
+                                )}
+
+                            </div>
+
+
+                            <span className="text-sm font-semibold text-gray-700">
+                                {averageRating}
+                            </span>
+
+
+                            <span className="text-sm text-gray-400">
+
+                                ({reviews.length}{" "}
+
+                                {reviews.length === 1
+                                    ? "review"
+                                    : "reviews"}
+
+                                )
+
+                            </span>
+
+                        </div>
+
+
+                        {/* PRICE */}
+
+                        <p className="mb-4 text-3xl font-bold text-emerald-600">
                             ${product.price}
                         </p>
 
-                        <p className="text-gray-600 mb-6">
-                            Stock: {product.stock}
-                        </p>
+
+                        {/* STOCK */}
+
+                        <div className="mb-7">
+
+                            {product.stock > 0 ? (
+
+                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+
+                                    {product.stock} items in stock
+
+                                </span>
+
+                            ) : (
+
+                                <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-sm font-semibold text-red-600">
+
+                                    Out of stock
+
+                                </span>
+
+                            )}
+
+                        </div>
+
+
+                        {/* ADD TO CART */}
 
                         <button
                             onClick={handleAddToCart}
-                            disabled={product.stock === 0}
-                            className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            disabled={
+                                product.stock === 0 ||
+                                cartLoading
+                            }
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 py-3.5 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-400 md:w-auto"
                         >
-                            {product.stock === 0
-                                ? "Out of Stock"
-                                : "Add to Cart"}
+
+                            <ShoppingCart size={18} />
+
+                            {cartLoading
+                                ? "Adding..."
+                                : product.stock === 0
+                                    ? "Out of Stock"
+                                    : "Add to Cart"}
+
                         </button>
 
                     </div>
@@ -464,82 +721,280 @@ function ProductDetails() {
             </section>
 
 
-            <hr />
-
-
             {/* ==================================
                 REVIEWS
             ================================== */}
 
-            <section>
-
-                <h2>
-                    Reviews
-                </h2>
+            <section className="mx-auto max-w-6xl px-6 py-12">
 
 
-                {reviews.length === 0 ? (
+                {/* REVIEW HEADER */}
 
-                    <p>
-                        No reviews yet.
+                <div className="mb-8">
+
+                    <div className="mb-2 flex items-center gap-3">
+
+                        <MessageSquare
+                            size={28}
+                            className="text-emerald-600"
+                        />
+
+                        <h2 className="text-3xl font-bold text-gray-900">
+                            Customer Reviews
+                        </h2>
+
+                    </div>
+
+                    <p className="text-gray-500">
+                        See what other customers think about this product.
                     </p>
 
-                ) : (
-
-                    reviews.map((review) => (
-
-                        <div key={review._id}>
-
-                            <h3>
-                                {review.user?.name || "User"}
-                            </h3>
+                </div>
 
 
-                            <p>
-                                Rating: {review.rating}/5
+                {/* REVIEW SUMMARY */}
+
+                <div className="mb-8 rounded-2xl border border-emerald-100 bg-emerald-50 p-6">
+
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+
+
+                        {/* AVERAGE */}
+
+                        <div className="text-center sm:text-left">
+
+                            <p className="text-5xl font-bold text-gray-900">
+                                {averageRating}
                             </p>
 
 
-                            <p>
-                                {review.comment}
+                            <div className="mt-2 flex items-center justify-center gap-1 sm:justify-start">
+
+                                {[1, 2, 3, 4, 5].map(
+                                    (star) => (
+
+                                        <Star
+                                            key={star}
+                                            size={20}
+                                            className={
+                                                star <=
+                                                Math.round(
+                                                    Number(
+                                                        averageRating
+                                                    )
+                                                )
+                                                    ? "fill-yellow-400 text-yellow-400"
+                                                    : "text-gray-300"
+                                            }
+                                        />
+
+                                    )
+                                )}
+
+                            </div>
+
+
+                            <p className="mt-2 text-sm text-gray-500">
+
+                                Based on {reviews.length}{" "}
+
+                                {reviews.length === 1
+                                    ? "review"
+                                    : "reviews"}
+
                             </p>
-
-
-                            {/* =========================
-                                ONLY SHOW ACTIONS FOR
-                                CURRENT USER
-                            ========================= */}
-
-                            {review.user?._id === user?._id && (
-
-                                <div>
-
-                                    <button
-                                        onClick={() =>
-                                            handleEdit(review)
-                                        }
-                                    >
-                                        Edit
-                                    </button>
-
-
-                                    <button
-                                        onClick={() =>
-                                            handleDelete(review._id)
-                                        }
-                                    >
-                                        Delete
-                                    </button>
-
-                                </div>
-
-                            )}
-
-                            <hr />
 
                         </div>
 
-                    ))
+
+                        {/* DIVIDER */}
+
+                        <div className="hidden h-20 w-px bg-emerald-200 sm:block" />
+
+
+                        {/* DESCRIPTION */}
+
+                        <div>
+
+                            <h3 className="mb-1 font-semibold text-gray-900">
+
+                                {reviews.length === 0
+                                    ? "Be the first to review this product"
+                                    : "What customers are saying"}
+
+                            </h3>
+
+                            <p className="text-sm text-gray-600">
+
+                                Your feedback helps other customers make
+                                better purchasing decisions.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {/* REVIEW LIST */}
+
+                {reviews.length === 0 ? (
+
+                    <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
+
+                        <MessageSquare
+                            size={42}
+                            className="mx-auto mb-4 text-gray-300"
+                        />
+
+                        <h3 className="text-lg font-semibold text-gray-800">
+                            No reviews yet
+                        </h3>
+
+                        <p className="mt-1 text-gray-500">
+                            Be the first customer to share your experience.
+                        </p>
+
+                    </div>
+
+                ) : (
+
+                    <div className="space-y-5">
+
+                        {reviews.map((review) => (
+
+                            <div
+                                key={review._id}
+                                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+                            >
+
+                                {/* USER + RATING */}
+
+                                <div className="flex items-start justify-between gap-4">
+
+                                    <div className="flex items-center gap-3">
+
+                                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100">
+
+                                            <User
+                                                size={21}
+                                                className="text-emerald-600"
+                                            />
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <h3 className="font-semibold text-gray-900">
+                                                {review.user?.name || "User"}
+                                            </h3>
+
+                                            <p className="text-xs text-gray-400">
+
+                                                {review.createdAt
+                                                    ? new Date(
+                                                        review.createdAt
+                                                    ).toLocaleDateString(
+                                                        "en-US",
+                                                        {
+                                                            year: "numeric",
+                                                            month: "short",
+                                                            day: "numeric",
+                                                        }
+                                                    )
+                                                    : ""}
+
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {/* RATING */}
+
+                                    <div className="flex items-center gap-1">
+
+                                        {[1, 2, 3, 4, 5].map(
+                                            (star) => (
+
+                                                <Star
+                                                    key={star}
+                                                    size={17}
+                                                    className={
+                                                        star <=
+                                                        Number(
+                                                            review.rating
+                                                        )
+                                                            ? "fill-yellow-400 text-yellow-400"
+                                                            : "text-gray-300"
+                                                    }
+                                                />
+
+                                            )
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* COMMENT */}
+
+                                <p className="mt-5 leading-7 text-gray-600">
+                                    {review.comment}
+                                </p>
+
+
+                                {/* CURRENT USER ACTIONS */}
+
+                                {review.user?._id === user?._id && (
+
+                                    <div className="mt-5 flex items-center gap-3 border-t border-gray-100 pt-4">
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleEdit(review)
+                                            }
+                                            className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-100"
+                                        >
+
+                                            <Pencil size={15} />
+
+                                            Edit
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleDelete(
+                                                    review._id
+                                                )
+                                            }
+                                            className="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+                                        >
+
+                                            <Trash2 size={15} />
+
+                                            Delete
+
+                                        </button>
+
+                                    </div>
+
+                                )}
+
+                            </div>
+
+                        ))}
+
+                    </div>
 
                 )}
 
@@ -550,118 +1005,207 @@ function ProductDetails() {
                 ADD / EDIT REVIEW
             ================================== */}
 
-            <section>
+            <section className="mx-auto max-w-6xl px-6 pb-12">
 
-                <h2>
-
-                    {editingReview
-                        ? "Edit Review"
-                        : "Add Review"}
-
-                </h2>
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8">
 
 
-                <form onSubmit={handleSubmitReview}>
+                    {/* FORM HEADER */}
 
-                    {/* Rating */}
+                    <div className="mb-6 flex items-center justify-between">
 
-                    <div>
+                        <div>
 
-                        <label>
-                            Rating:
-                        </label>
+                            <h2 className="text-2xl font-bold text-gray-900">
+
+                                {editingReview
+                                    ? "Edit Your Review"
+                                    : "Write a Review"}
+
+                            </h2>
+
+                            <p className="mt-1 text-sm text-gray-500">
+                                Share your experience with this product.
+                            </p>
+
+                        </div>
 
 
-                        <select
-                            value={rating}
-                            onChange={(e) =>
-                                setRating(
-                                    Number(e.target.value)
-                                )
-                            }
-                        >
+                        {editingReview && (
 
-                            <option value={1}>
-                                1
-                            </option>
+                            <button
+                                type="button"
+                                onClick={handleCancelEdit}
+                                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100"
+                                title="Cancel editing"
+                            >
 
-                            <option value={2}>
-                                2
-                            </option>
+                                <X size={20} />
 
-                            <option value={3}>
-                                3
-                            </option>
+                            </button>
 
-                            <option value={4}>
-                                4
-                            </option>
-
-                            <option value={5}>
-                                5
-                            </option>
-
-                        </select>
+                        )}
 
                     </div>
 
 
-                    {/* Comment */}
+                    {/* FORM */}
 
-                    <div>
-
-                        <label>
-                            Comment:
-                        </label>
-
-
-                        <textarea
-                            value={comment}
-                            onChange={(e) =>
-                                setComment(e.target.value)
-                            }
-                            placeholder="Write your review..."
-                        />
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        disabled={reviewLoading}
+                    <form
+                        onSubmit={handleSubmitReview}
+                        className="space-y-6"
                     >
 
-                        {reviewLoading
-                            ? "Saving..."
-                            : editingReview
-                                ? "Update Review"
-                                : "Submit Review"}
 
-                    </button>
+                        {/* RATING */}
+
+                        <div>
+
+                            <label className="mb-3 block text-sm font-semibold text-gray-700">
+                                Your Rating
+                            </label>
 
 
-                    {editingReview && (
+                            <div className="flex items-center gap-2">
 
-                        <button
-                            type="button"
-                            onClick={handleCancelEdit}
-                        >
-                            Cancel
-                        </button>
+                                {[1, 2, 3, 4, 5].map(
+                                    (star) => (
 
-                    )}
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() =>
+                                                setRating(star)
+                                            }
+                                            className="transition-transform hover:scale-110"
+                                            aria-label={`Rate ${star} out of 5`}
+                                        >
 
-                </form>
+                                            <Star
+                                                size={32}
+                                                className={
+                                                    star <= rating
+                                                        ? "fill-yellow-400 text-yellow-400"
+                                                        : "text-gray-300 hover:text-yellow-300"
+                                                }
+                                            />
+
+                                        </button>
+
+                                    )
+                                )}
+
+
+                                <span className="ml-2 text-sm font-semibold text-gray-600">
+                                    {rating}/5
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* COMMENT */}
+
+                        <div>
+
+                            <label
+                                htmlFor="review-comment"
+                                className="mb-2 block text-sm font-semibold text-gray-700"
+                            >
+                                Your Review
+                            </label>
+
+
+                            <textarea
+                                id="review-comment"
+                                value={comment}
+                                onChange={(e) =>
+                                    setComment(e.target.value)
+                                }
+                                placeholder="Tell other customers about your experience..."
+                                rows={5}
+                                className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                            />
+
+
+                            <p className="mt-2 text-xs text-gray-400">
+                                Please share an honest and helpful review.
+                            </p>
+
+                        </div>
+
+
+                        {/* BUTTONS */}
+
+                        <div className="flex flex-col gap-3 sm:flex-row">
+
+                            <button
+                                type="submit"
+                                disabled={reviewLoading}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                            >
+
+                                {reviewLoading ? (
+
+                                    "Saving..."
+
+                                ) : (
+
+                                    <>
+
+                                        <Send size={17} />
+
+                                        {editingReview
+                                            ? "Update Review"
+                                            : "Submit Review"}
+
+                                    </>
+
+                                )}
+
+                            </button>
+
+
+                            {editingReview && (
+
+                                <button
+                                    type="button"
+                                    onClick={handleCancelEdit}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-100"
+                                >
+
+                                    <X size={17} />
+
+                                    Cancel
+
+                                </button>
+
+                            )}
+
+                        </div>
+
+                    </form>
+
+                </div>
 
             </section>
 
 
-            <hr />
+            {/* ==================================
+                BACK TO PRODUCTS
+            ================================== */}
 
+            <div className="mx-auto max-w-6xl px-6 pb-12">
 
-            <Link to="/products">
-                Back to Products
-            </Link>
+                <Link
+                    to="/shop"
+                    className="inline-flex items-center font-semibold text-emerald-600 transition hover:text-emerald-700"
+                >
+                    ← Back to Products
+                </Link>
+
+            </div>
 
         </div>
 
